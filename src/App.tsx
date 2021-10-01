@@ -1,57 +1,53 @@
 import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
 import './App.css';
+import { Router, Route, Switch } from 'react-router-dom';
+import PageLoader from 'components/Loader/PageLoader';
+import SuspenseWithChunkError from 'components/SuspenseWithChunkError';
+import NotFound from 'pages/NotFound';
+import history from './utils/routerHistory';
+import routes, { RouteCustom } from 'routes';
+import { PrivateRoute, PublicRoute } from 'layout';
 
 function App() {
+  const showRoute = (routes: RouteCustom[]) => {
+    let result = null;
+    if (routes.length > 0) {
+      result = routes.map((route, index) => {
+        return route.isPrivate ? (
+          <PrivateRoute
+            key={index}
+            path={route.path}
+            exact={route.exact}
+            component={route.main}
+            layout={route.layout}
+          />
+        ) : (
+          <PublicRoute
+            key={index}
+            path={route.path}
+            exact={route.exact}
+            component={route.main}
+            layout={route.layout}
+          />
+        );
+      });
+    }
+    return (
+      <Switch>
+        {result}
+
+        {/* 404 */}
+        <Route component={NotFound} />
+      </Switch>
+    );
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
+    <Router history={history}>
+      <SuspenseWithChunkError fallback={<PageLoader />}>
+        {showRoute(routes)}
+      </SuspenseWithChunkError>
+    </Router>
   );
 }
 
